@@ -1,0 +1,89 @@
+--- getty_ps-2.0.7j/man/getty.1.hangup	Sat Jun 10 13:28:58 2000
++++ getty_ps-2.0.7j/man/getty.1	Sat Jun 10 13:30:50 2000
+@@ -24,7 +24,9 @@
+ .B /etc/getty
+ [\-d
+ .I defaults_file]
+-[\-a] [\-h] [\-r
++[\-a] [\-h] [\-H
++.I hangupsecs]
++[\-r
+ .I delay]
+ [\-t
+ .I timeout]
+@@ -118,7 +120,12 @@
+ flag (or
+ .B HANGUP=NO
+ is specified in the defaults file), it will force a hangup on the line
+-by setting the speed to zero.  Giving
++by setting the speed to zero.  You can specify the amount of time
++to leave the line on-hook during a hangup by specifying the
++.B \-H
++flag followed by a number of seconds (or using
++.BI HANGUPSECS = hangupsecs
++in the defaults file). Giving
+ .B \-r
+ .I delay
+ on the command line (or using
+--- getty_ps-2.0.7j/main.c.hangup	Sat Jun 10 13:23:59 2000
++++ getty_ps-2.0.7j/main.c	Sat Jun 10 13:28:11 2000
+@@ -184,7 +184,7 @@
+ 	waitfor =	(char *) NULL;		/* no waitfor string */
+ 	Connect =	(char *) NULL;		/* no connect string */
+ 	defname =	(char *) NULL;		/* no defaults file */
+-
++	HangUpSecs = 	2;			/* # of seconds to hangup the line */	
+ #ifdef ISSUE
+ 	issue =		ISSUE;			/* login banner */
+ #endif /* ISSUE */
+@@ -313,7 +313,7 @@
+ /* first, the command line
+ */
+ 
+-	while((c = getopt(count, args, "RC:D:ac:d:hr:t:w:")) != EOF) {
++	while((c = getopt(count, args, "RC:D:ac:d:hr:t:w:H:")) != EOF) {
+ 		switch(c) {
+ #ifdef RBGETTY
+ 			case 'R':
+@@ -355,6 +355,9 @@
+ 				waitchar = TRUE;
+ 				waitfor = optarg;
+ 				break;
++			 case 'H':
++				HangUpSecs = (unsigned) atoi(optarg);
++				break;
+ 			case '?':
+ 				exit_usage(2);
+ 		}
+@@ -432,6 +435,12 @@
+ 		NoHangUp = TRUE;
+ 	if((p = defvalue(def, "WAITCHAR")) && (strequal(p, "YES")))
+ 		waitchar = TRUE;
++	if((p = defvalue(def, "HANGUPSECS")))
++		HangUpSecs = (unsigned) atoi(p);
++	if (HangUpSecs < 2 || HangUpSecs > 600) {
++		logerr("Value for HANGUPSECS on %s should be between 2 and 600 secs", Device);
++		HangUpSecs = 2;
++	}
+ 	if((p = defvalue(def, "DELAY"))) delay = (unsigned) atoi(p);
+ 	if((p = defvalue(def, "TIMEOUT"))) TimeOut = atoi(p);
+ 	if((p = defvalue(def, "CONNECT"))) Connect = p;
+@@ -666,7 +675,7 @@
+ 		termio.c_cflag |= B0;
+ 	}
+ 	(void) ioctl(fd, TCSETSF, &termio);
+-	if(! NoHangUp) sleep(2);
++	if(! NoHangUp) sleep(HangUpSecs);
+ 	gtab = gtabvalue(GtabId, G_FORCE);
+ 	settermio(&(gtab->itermio), INITIAL);
+ #ifndef GDB_FRIENDLY
+--- getty_ps-2.0.7j/extern.h.hangup	Sat Jun 10 13:28:16 2000
++++ getty_ps-2.0.7j/extern.h	Sat Jun 10 13:28:45 2000
+@@ -54,6 +54,7 @@
+ EXTERN	char	*SysName;	/* nodename of system */
+ EXTERN	int	TimeOut;	/* timeout value from command line */
+ EXTERN	char	*Version;	/* value of VERSION */
++EXTERN  int	HangUpSecs;	/* Number of seconds to hang up the line */
+ 
+ #ifdef	WARNCASE
+ EXTERN	boolean	WarnCase;	/* controls display of bad case message */

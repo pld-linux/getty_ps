@@ -1,0 +1,15 @@
+--- getty_ps-2.0.7j/funcs.c.foo	Sat Jun 10 13:19:30 2000
++++ getty_ps-2.0.7j/funcs.c	Sat Jun 10 13:21:18 2000
+@@ -84,10 +84,10 @@
+ 			case 'D':	/* date */
+ 				(void) time(&clock);
+ 				lt = localtime(&clock);
+-				(void) sprintf(tbuf, "%d %s %02d",
++				(void) sprintf(tbuf, "%d %s %04d",
+ 						lt->tm_mday,
+ 						month_name[lt->tm_mon],
+-						lt->tm_year);
++						1900+lt->tm_year);
+ 				if (Fputs(tbuf, stream) == EOF)
+ 					return(EOF);
+ 				break;

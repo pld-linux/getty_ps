@@ -1,0 +1,84 @@
+From vendor-sec-owner@ns.caldera.de Fri Dec 29 13:24:23 2000
+Return-Path: <vendor-sec-owner@ns.caldera.de>
+Received: from lacrosse.corp.redhat.com (IDENT:root@lacrosse.corp.redhat.com [207.175.42.154])
+	by devserv.devel.redhat.com (8.11.0/8.11.0) with ESMTP id eBTIONF14629;
+	Fri, 29 Dec 2000 13:24:23 -0500
+Received: from mail.redhat.com (mail.redhat.com [199.183.24.239])
+	by lacrosse.corp.redhat.com (8.9.3/8.9.3) with ESMTP id NAA16673
+	for <security@lacrosse.redhat.com>; Fri, 29 Dec 2000 13:24:22 -0500
+Received: from ns.caldera.de (ns.caldera.de [212.34.180.1])
+	by mail.redhat.com (8.11.0/8.8.7) with ESMTP id eBTIOLD01691
+	for <security@redhat.com>; Fri, 29 Dec 2000 13:24:21 -0500
+Received: (from daemon@localhost)
+	by ns.caldera.de (8.9.3/8.9.3) id TAA17031
+	for vendor-sec-real; Fri, 29 Dec 2000 19:09:48 +0100
+Received: (from daemon@localhost)
+	by ns.caldera.de (8.9.3/8.9.3) id TAA17022
+	for vendor-sec@lst.de; Fri, 29 Dec 2000 19:09:47 +0100
+Received: from UNKNOWN(216.161.55.93), claiming to be "blue.int.wirex.com"
+ via SMTP by ns.caldera.de, id smtpdmWA3S4; Fri Dec 29 19:09:41 2000
+Received: (from greg@localhost)
+	by blue.int.wirex.com (8.9.3/8.9.3) id KAA29894;
+	Fri, 29 Dec 2000 10:10:26 -0800
+Date: Fri, 29 Dec 2000 10:10:26 -0800
+From: Greg KH <greg@wirex.com>
+To: gleasokr@boulder.colorado.edu
+Cc: vendor-sec@lst.de, security@wirex.com
+Subject: temp file creation problem in getty_ps
+Message-ID: <20001229101026.F29373@wirex.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+X-Operating-System: Linux 2.2.18-immunix (i686)
+Status: RO
+Content-Length: 1098
+
+Hi,
+
+In building Immunix Linux 7.0, we ran across the following problem in
+getty_ps 2.0.7j:
+
+The function makelock, in the file uufuncs.c creates temp files in an
+insecure way.  The patch below, by Steve Beattie <steve@wirex.com>
+should fix this problem.
+
+thanks,
+
+greg k-h
+
+
+diff -ur getty_ps-2.0.7j-orig/uufuncs.c getty_ps-2.0.7j/uufuncs.c
+--- getty_ps-2.0.7j-orig/uufuncs.c	Fri Dec 15 18:41:09 2000
++++ getty_ps-2.0.7j/uufuncs.c	Fri Dec 15 18:53:49 2000
+@@ -74,7 +74,7 @@
+ char *name;
+ {
+ 	int fd, pid;
+-	char *temp, buf[MAXLINE+1];
++	char temp[MAXLINE+1];
+ #ifdef	ASCIIPID
+ 	char apid[16];
+ #endif	/* ASCIIPID */
+@@ -86,12 +86,13 @@
+ 
+ 	/* first make a temp file
+ 	 */
+-	(void) sprintf(buf, LOCK, "TM.XXXXXX");
+-	if ((fd = creat((temp=mktemp(buf)), 0444)) == FAIL) {
++	(void) sprintf(temp, LOCK, "TM.XXXXXX");
++	if ((fd = mkstemp(temp)) == FAIL) {
+ 		logerr("create failed on temp lockfile \"%s\": %s",
+ 		       temp, strerror(errno));
+ 		return(FAIL);
+ 	}
++	fchmod(fd, 0444);
+ 	debug(D_LOCK, "temp = (%s)", temp);
+ 
+ 	/* put my pid in it
+
+-- 
+greg@(kroah|wirex).com
+http://immunix.org/~greg
+
+

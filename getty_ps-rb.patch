@@ -1,0 +1,11 @@
+--- getty_ps-2.0.7j/tune.h.foo	Wed Jan 31 16:51:53 2001
++++ getty_ps-2.0.7j/tune.h	Wed Jan 31 16:52:02 2001
+@@ -24,7 +24,7 @@
+ 
+ /*  Feature selection
+  */
+-#undef RBGETTY				/* include ringback code */
++#define RBGETTY				/* include ringback code */
+ #define SCHED				/* include scheduler code */
+ #define	DEBUG				/* include debugging code */
+ #define	LOGUTMP				/* need to update utmp/wtmp files */
