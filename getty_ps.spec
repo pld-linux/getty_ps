@@ -74,16 +74,3 @@ rm -rf $RPM_BUILD_ROOT
 
 %attr(755,root,root) /sbin/*
 %{_mandir}/man[15]/*
-
-%changelog
-* Sat Dec 19 1998 Tomasz K³oczko <kloczek@rudy.mif.pg.gda.pl>
-  [2.0.7j-5]
-- changed permission on /var/log/getty.log to 600,
-- added gzipping man pages,
-- added using LDFLAGS="-s" to ./configure enviroment,
-- added getty_ps-ncurses.patch for compiling getty_ps against ncurses,
-- added using $RPM_OPT_FLAGS during compile.
-
-* Tue Oct 06 1998 Wojtek ¦lusarczyk <wojtek@shadow.eu.org>
-- adde pl translation,
-- major modifications of the spec file. 
