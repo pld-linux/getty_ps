@@ -5,7 +5,7 @@ Summary(pl):	getty i uugetty
 Summary(tr):	getty ve uugetty
 Name:		getty_ps
 Version:	2.0.7j
-Release:	6
+Release:	10
 Group:		Utilities/System
 Group(pl):	Narzêdzia/System
 Copyright:	Distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
