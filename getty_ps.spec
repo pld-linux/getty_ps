@@ -8,8 +8,6 @@ Version:	2.0.7j
 Release:	15
 License:	distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
 Group:		Applications/System
-Group(de):	Applikationen/System
-Group(pl):	Aplikacje/System
 Source0:	ftp://tsx-11.mit.edu/pub/linux/sources/sbin/%{name}-%{version}.tar.gz
 Patch0:		%{name}-misc.patch
 Patch1:		%{name}-y2k.patch
