@@ -76,7 +76,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc Examples ANNOUNCE README.linux README.2.0.7j README.hi-speed
 %config(missingok) %verify(not mtime size md5) /etc/gettydefs
 %attr(755, root, root) /sbin/*
-%attr(644, root,  man) %{_mandir}/man[15]/*
+%{_mandir}/man[15]/*
 %attr(600, root,  man) %ghost /var/log/getty.log
 
 %changelog
