@@ -49,7 +49,7 @@ mgetty daha kullanýþlýdýr).
 # clean this ...
 %{__make} clean
 
-%{__make} OPT="$RPM_OPT_FLAGS"
+%{__make} OPT="$RPM_OPT_FLAGS" LIBS="-lncurses"
 
 %install
 rm -rf $RPM_BUILD_ROOT
