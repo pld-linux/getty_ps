@@ -72,12 +72,12 @@ gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man{1,5}/*
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(644, root, root, 755)
+%defattr(644,root,root,755)
 %doc Examples ANNOUNCE README.linux README.2.0.7j README.hi-speed
 %config(missingok) %verify(not mtime size md5) /etc/gettydefs
-%attr(755, root, root) /sbin/*
+%attr(755,root,root) /sbin/*
 %{_mandir}/man[15]/*
-%attr(600, root,  man) %ghost /var/log/getty.log
+%attr(600,root,  man) %ghost /var/log/getty.log
 
 %changelog
 * Sat Dec 19 1998 Tomasz K³oczko <kloczek@rudy.mif.pg.gda.pl>
