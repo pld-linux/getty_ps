@@ -9,6 +9,7 @@ Release:	15
 License:	distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
 Group:		Applications/System
 Source0:	ftp://tsx-11.mit.edu/pub/linux/sources/sbin/%{name}-%{version}.tar.gz
+# Source0-md5:	56bd3fd2f9a23ffdf96503f664f5c914
 Patch0:		%{name}-misc.patch
 Patch1:		%{name}-y2k.patch
 Patch2:		%{name}-rb.patch
