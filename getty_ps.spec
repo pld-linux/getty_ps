@@ -14,7 +14,7 @@ Patch1:		%{name}-y2k.patch
 Patch2:		%{name}-rb.patch
 Patch3:		%{name}-hangup.patch
 Patch4:		%{name}-mktemp.patch
-URL:		ftp://tsx-11.mit.edu/pub/linux/sources/sbin
+URL:		ftp://tsx-11.mit.edu/pub/linux/sources/sbin/%{name}-%{version}.lsm
 BuildRequires:	ncurses-devel >= 5.2
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
