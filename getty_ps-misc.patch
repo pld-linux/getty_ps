@@ -1,0 +1,529 @@
+diff -Nur getty_ps-2.0.7j/Makefile getty_ps-2.0.7j.pld/Makefile
+--- getty_ps-2.0.7j/Makefile	Tue Jan 23 17:07:04 1996
++++ getty_ps-2.0.7j.pld/Makefile	Thu Jun 10 16:34:45 1999
+@@ -8,22 +8,23 @@
+ #   be expected in /etc/conf.* rather than /etc/default, modem locks 
+ #   will be created in /var/lock, and binaries will go in /sbin.
+ # 
+-# FSSTND=-DFSSTND
++FSSTND=-DFSSTND
+ 
+ SHELL=	/bin/sh
+ CC=	gcc
+ 
+ #CFLAGS=	-g -fpcc-struct-return ${FSSTND}
+ #LFLAGS=	-g
+-CFLAGS=	-O3 -fomit-frame-pointer -fpcc-struct-return ${FSSTND}
++CFLAGS=	$(OPT) -fpcc-struct-return ${FSSTND}
+ LFLAGS=	-s
+ 
+-LIBS=	-ltermcap
++LIBS=	-lcurses
+ LLIBS=	
+ 
+ # where things go
+-BIN=    /sbin
+-UUBIN=  /sbin
++BIN=    $(TOPDIR)/sbin
++UUBIN=  $(TOPDIR)/sbin
++MANDIR=	$(TOPDIR)/usr/share/man/man
+ 
+ # what are we making
+ SRC=	main.c funcs.c defaults.c table.c utmp2.c
+@@ -48,9 +49,15 @@
+ install:
+ 	-mv $(BIN)/getty $(BIN)/getty-
+ 	-mv $(UUBIN)/uugetty $(UUBIN)/uugetty-
+-	-cp getty $(BIN)
+-	-cp uugetty $(UUBIN)
+-	chmod 700 $(BIN)/getty $(UUBIN)/uugetty
++	-install -s -m 0755 getty $(BIN)
++	-install -s -m 0755 uugetty $(UUBIN)
++ifdef FSSTND
++	mv man/getty.1 man/getty.1x
++	cat man/getty.1x |\
++		 sed -e 's,/etc/default/,/etc/conf.,g'> man/getty.1
++endif
++	install -m 644 man/getty.1 $(MANDIR)1
++	install -m 644 man/gettydefs.5 $(MANDIR)5
+ 
+ clean:
+ 	rm -f *.o core *.out *~ .depend Make.Log Makefile.old
+diff -Nur getty_ps-2.0.7j/config.h getty_ps-2.0.7j.pld/config.h
+--- getty_ps-2.0.7j/config.h	Sat May 21 07:11:24 1994
++++ getty_ps-2.0.7j.pld/config.h	Thu Jun 10 16:30:28 1999
+@@ -27,14 +27,14 @@
+ #define	index	  strchr		/* use these instead */
+ #define	rindex	  strrchr
+ 
+-typedef	void	sig_t;
++/*typedef	void	sig_t;*/
+ 
+ #ifndef	UTMP_FILE
+-#define	UTMP_FILE "/etc/utmp"		/* name of the utmp file */
++#define	UTMP_FILE "/var/run/utmpx"		/* name of the utmp file */
+ #endif	/* UTMP_FILE */
+ 
+ #ifndef	WTMP_FILE
+-#define	WTMP_FILE "/var/adm/wtmp"	/* FSSTND compliant wtmp file */
++#define	WTMP_FILE "/var/log/wtmpx"	/* FSSTND compliant wtmp file */
+ #endif	/* WTMP_FILE */
+ 
+ #if 0
+@@ -46,8 +46,8 @@
+ 
+ #define	ASCIIPID			/* PID stored in ASCII */
+ #define	BOTHPID				/* ... or perhaps not */
+-#define	UUCPID 11			/* uid of UUCP account */
+-#define	LOCK "/usr/spool/uucp/LCK..%s"	/* lock file name */
++#define	UUCPID "uucp"			/* uid of UUCP account */
++#define	LOCK "/var/lock/LCK..%s"	/* lock file name */
+ 
+ 
+ 
+diff -Nur getty_ps-2.0.7j/extern.h getty_ps-2.0.7j.pld/extern.h
+--- getty_ps-2.0.7j/extern.h	Tue May 17 05:38:52 1994
++++ getty_ps-2.0.7j.pld/extern.h	Thu Jun 10 16:30:28 1999
+@@ -38,12 +38,7 @@
+ /*	Global variables
+  */
+ 
+-#ifdef	MAIN
+ EXTERN	char	MsgBuf[80];	/* message buffer */
+-#else
+-EXTERN	char	MsgBuf[];
+-#endif	/* MAIN */
+-
+ EXTERN	boolean	AutoBaud;	/* autobauding requested? */
+ EXTERN	char	AutoRate[16];	/* AutoBaud digits buffer */
+ EXTERN	boolean	Check;		/* check a gettytab file? */
+@@ -79,10 +74,6 @@
+ extern	unsigned alarm(), sleep();
+ extern	time_t	time();
+ #endif
+-
+-#ifndef	STRDUP			/* Is There In Truth No Strdup() ? */
+-extern	char	*strdup();
+-#endif	/* STRDUP */
+ 
+ #ifndef	GETUTENT		/* How about getutent() ? */
+ extern	struct utmp	*getutent();
+diff -Nur getty_ps-2.0.7j/funcs.c getty_ps-2.0.7j.pld/funcs.c
+--- getty_ps-2.0.7j/funcs.c	Tue May 17 09:33:36 1994
++++ getty_ps-2.0.7j.pld/funcs.c	Thu Jun 10 16:30:28 1999
+@@ -70,7 +70,7 @@
+ 	char c, n, tbuf[16], ubuf[32];
+ 	time_t clock;
+ 	struct tm *lt, *localtime();
+-	char *month_name[] = { "January", "February", "March", "April",
++static	char *month_name[] = { "January", "February", "March", "April",
+ 			       "May", "June", "July", "August", "September",
+ 			       "October", "November", "December" };
+ 
+@@ -226,8 +226,15 @@
+ 
+ 		/* set c_cc[] chars to reasonable values
+ 		 */
++#ifdef _POSIX_VDISABLE
++#if _POSIX_VDISABLE != -1
+ 		for (i=0; i < NCC; i++)
+-			setterm.c_cc[i] = CNUL;
++			setterm.c_cc[i] = _POSIX_VDISABLE;
++#else
++		for (i=0; i < NCC; i++)
++			setterm.c_cc[i] = 0;
++#endif
++#endif
+ 		setterm.c_cc[VINTR] = Cintr;
+ 		setterm.c_cc[VQUIT] = CQUIT;
+ 		setterm.c_cc[VERASE] = Cerase;
+@@ -402,6 +409,7 @@
+ 	}
+ 
+ 	while ((ch = *s++)) {
++	        int i;
+ 		if (ch == '\\') {
+ 			switch (*s) {
+ 			case 'p':		/* '\p' == pause */
+@@ -424,20 +432,22 @@
+ 				break;
+ 			}
+ 		}
+-		sprintf(MsgBuf + strlen(MsgBuf), ch < ' ' ? "^%c" : "%c",
++		/* check if we have enough room for Msg */
++		if ((i=strlen(MsgBuf))>sizeof(MsgBuf)-3) {
++			debug(D_INIT, MsgBuf);
++			MsgBuf[i=0] = '\0';
++		}
++		sprintf(MsgBuf + i, ch < ' ' ? "^%c" : "%c",
+ 			ch < ' ' ? ch | 0100 : ch);
+ 		if (putc(ch, stdout) == EOF) {
+ 			retval = FAIL;
+ 			break;
+ 		}
+ 	}
+-	strcat(MsgBuf, ") -- ");
+ 	if(retval == SUCCESS)
+-		strcat(MsgBuf, "OK");
++                debug(D_INIT, "%s) -- OK", MsgBuf);
+ 	else
+-		sprintf(MsgBuf + strlen(MsgBuf), 
+-			"Failed: %s", strerror(errno));
+-	debug(D_INIT, MsgBuf);
++	        debug(D_INIT, "%s) -- Failed: %s", MsgBuf, strerror(errno));
+ 	return(retval);
+ }
+ 
+@@ -456,7 +466,7 @@
+ 	register int expfail = EXPFAIL;
+ 	register retval = FAIL;
+ 	char ch, *p, word[MAXLINE+1], buf[MAXBUF];
+-	sig_t (*oldalarm)() = NULL;
++	sig_t oldalarm = NULL;
+ 
+ 	if (strequal(s, "\"\"")) {	/* ("") used as a place holder */
+ 		debug(D_INIT, "EXPECT: ([nothing])");
+@@ -465,7 +475,7 @@
+ 
+ 	/* look for escape chars in expected word
+ 	 */
+-	for (p = word; (ch = (*s++ & 0177));) {
++	for (p = word; (ch = (*s++ & 0177)) && p<&word[MAXLINE+1];) {
+ 		if (ch == '\\') {
+ 			if (*s == 'A') {	/* spot for AutoBaud digits */
+ 				*p++ = AUTOBD;
+@@ -495,12 +505,24 @@
+ 	oldalarm = signal(SIGALRM, expalarm);
+ 	(void) alarm((unsigned) expfail);
+ 
+-	sprintf(MsgBuf, "EXPECT: <%d> (%s), GOT: ", expfail, dprint(word));
++	debug(D_INIT, "EXPECT: <%d> (%s)", expfail, dprint(word));
+ 
++	MsgBuf[0] = '\0';
+ 	p = buf;
+ 	while ((ch = getc(stdin)) != EOF) {
+-		sprintf(MsgBuf + strlen(MsgBuf), ch < ' ' ? "^%c" : "%c",
++		/* check if we have enough room for Msg */
++		if ((i=strlen(MsgBuf))>sizeof(MsgBuf)-3) {
++			debug(D_INIT, "GOT: %s", MsgBuf);
++			MsgBuf[i=0] = '\0';
++		}
++		sprintf(MsgBuf + i, ch < ' ' ? "^%c" : "%c",
+ 			ch < ' ' ? ch | 0100 : ch);
++		/* check if we have enough room */
++		if (p==&buf[MAXBUF]) {
++			/* oops, move back HALF the buffer */
++			p = &buf[MAXBUF/2];
++			strcpy(buf,p);
++		}
+ 		*p++ = (char) ((int) ch & 0177);
+ 		*p = '\0';
+ 		if (strlen(buf) >= strlen(word)) {
+@@ -515,7 +537,7 @@
+ 	}
+ 	(void) alarm((unsigned) 0);
+ 	(void) signal(SIGALRM, oldalarm);
+-	debug(D_INIT, "%s -- %s", MsgBuf, 
++	debug(D_INIT, "GOT: %s -- %s", MsgBuf, 
+ 		(retval == SUCCESS) ? "got it" : "Failed");
+ 	return(retval);
+ }
+@@ -563,8 +585,7 @@
+ **	expalarm() - called when expect()'s SIGALRM goes off
+ */
+ 
+-sig_t
+-expalarm()
++sig_t expalarm(int sig)
+ {
+ 	longjmp(env, 1);
+ }
+@@ -647,7 +668,7 @@
+ 		}
+ 		if (ch == Erase) {
+ 			if (count) {
+-				(void) fputs((Erase == '\010' ? 
++				(void) fputs((Erase == '\b' ? 
+ 					" \b" : "\b \b"), stdout);
+ 				(void) fflush(stdout);
+ 				--p;
+@@ -814,10 +835,14 @@
+ {
+ 	char *p, *fmt, ch;
+ 	static char msg[1024];
++	int i = 0 ;
+ 
+ 	msg[0] = '\0';
+ 	p = word;
+ 	while ((ch = *p++)) {
++	        /* is the buffer big enough */
++	        if ((i=strlen(msg)) > sizeof(msg)-7) 
++		  break;
+ 		if (ch == AUTOBD) {
+ 			strcat(msg, "[speed]");
+ 			continue;
+@@ -827,7 +852,7 @@
+ 		} else {
+ 			fmt = "%c";
+ 		}
+-		sprintf(msg + strlen(msg), fmt, ch);
++		sprintf(msg + i, fmt, ch);
+ 	}
+ 	return(msg);
+ }
+Binary files getty_ps-2.0.7j/getty and getty_ps-2.0.7j.pld/getty differ
+diff -Nur getty_ps-2.0.7j/getty.h getty_ps-2.0.7j.pld/getty.h
+--- getty_ps-2.0.7j/getty.h	Tue May 17 05:39:06 1994
++++ getty_ps-2.0.7j.pld/getty.h	Thu Jun 10 16:30:28 1999
+@@ -39,7 +39,6 @@
+ #include "config.h"
+ #include "extern.h"
+ #include "funcs.h"
+-#include "mytermio.h"		/* SMR - gcc was missing a few definitions */
+ 
+ /*	General purpose defines
+  */
+diff -Nur getty_ps-2.0.7j/main.c getty_ps-2.0.7j.pld/main.c
+--- getty_ps-2.0.7j/main.c	Fri Apr 26 19:26:03 1996
++++ getty_ps-2.0.7j.pld/main.c	Thu Jun 10 16:30:28 1999
+@@ -82,8 +82,9 @@
+ 	long sec, usec;
+ 	struct sigaction act;
+ 
++	memset(&act, 0, sizeof(struct sigaction));
+         act.sa_handler = action;
+-        act.sa_mask = 0;
++        sigemptyset(&act.sa_mask);
+         act.sa_flags = SA_NOMASK;	/* allow own signal to be received */
+         if(sigaction(SIGALRM, &act, NULL))		/* called by pause() */
+ 		Perror("sigaction");
+@@ -161,7 +162,7 @@
+ 	(void) signal(SIGTERM, sterm);
+ 	(void) signal(SIGSEGV, ssegv);
+ 	(void) signal(SIGHUP, shangup);
+-	(void) signal(SIGPIPE, SIG_IGN);
++	(void) signal(SIGPIPE, SIG_DFL);
+ 
+ 	strcpy(term, 	"unknown");		/* tty type */
+ 	Device =	"unknown";		/* tty device */
+@@ -178,7 +179,7 @@
+ 	delay = 	0;			/* delay before prompt */
+ 	speed =		(char *) NULL;		
+ 	clear =		TRUE;			/* clear the screen */
+-	login =		LOGIN;			/* login program */
++	loginprog =	LOGIN;			/* login program */
+ 	waitchar =	FALSE;			/* don't wait for a char */
+ 	waitfor =	(char *) NULL;		/* no waitfor string */
+ 	Connect =	(char *) NULL;		/* no connect string */
+@@ -423,7 +424,7 @@
+ 			Version = strdup(buf);
+ 		}
+ 	}
+-	if((p = defvalue(def, "LOGIN"))) login = p;
++	if((p = defvalue(def, "LOGIN"))) loginprog = p;
+ 	if((p = defvalue(def, "ISSUE"))) issue = p;
+ 	if((p = defvalue(def, "CLEAR")) && (strequal(p, "NO"))) 
+ 		clear = FALSE;
+@@ -1006,7 +1007,7 @@
+ 		Speed = speedtab[i].speed;
+ 
+ #ifdef ISSUE
+-		if (clear && *clrscr) {
++		if (clear && clrscr && *clrscr) {
+ 			(void) tputs(clrscr, 1, tputc);
+ 		}
+ 		fputc('\r', stdout);
+@@ -1024,8 +1025,8 @@
+ login_prompt:
+ 		(void) ioctl(STDIN, TCFLSH, 0);
+ #ifdef FIDO
+-	if (emsi && (strcmp(emsi,"yes") == 0)) 
+-		(void) Fputs("**EMSI_REQA77E\r", stdout);
++		if (emsi && (strcmp(emsi,"yes") == 0)) 
++			(void) Fputs("**EMSI_REQA77E\r", stdout);
+ #endif
+ 		(void) Fputs(gtab->login, stdout);
+ 		if(TimeOut > 0) {
+@@ -1039,7 +1040,7 @@
+ 				(void) signal(SIGALRM, SIG_DFL);
+ 				(void) alarm(0);
+ 
+-				login = fido;
++				loginprog = fido;
+ 				logerr("Fido Call Detected");
+ #endif /* FIDO */
+ 			case SUCCESS:
+@@ -1066,14 +1067,14 @@
+ 				setenv("TERM", term, TRUE);
+ #endif /* SETTERM */
+ 				debug(D_RUN, "execing login");
+-				(void) execl(login, 
++				(void) execl(loginprog, 
+ 				  "login", buf, (char *)NULL);
+ 				debug(D_RUN, 
+ 				  "exec failed: %s; trying with /bin/sh",
+ 				  strerror(errno));
+-				(void) execl("/bin/sh", "sh", "-c", login,
++				(void) execl("/bin/sh", "sh", "-c", loginprog,
+ 				  buf, (char *) NULL);
+-				logerr("exec of %s failed: %s", login,
++				logerr("exec of %s failed: %s", loginprog,
+ 				       strerror(errno));
+ 				exit(FAIL);
+ 
+diff -Nur getty_ps-2.0.7j/main.h getty_ps-2.0.7j.pld/main.h
+--- getty_ps-2.0.7j/main.h	Sun Feb  2 16:00:23 1997
++++ getty_ps-2.0.7j.pld/main.h	Thu Jun 10 16:31:28 1999
+@@ -16,9 +16,10 @@
+ #include <sys/stat.h>
+ #include <errno.h>
+ #include <stdlib.h>
+-#include <termcap.h>
++#include <ncurses/termcap.h>
+ #include <unistd.h>
+ #include <time.h>
++#include <limits.h>
+ 
+ #ifdef PWD
+ #include <pwd.h>
+@@ -89,16 +90,16 @@
+ EXTERN char		*defname;	/* defaults file name */
+ EXTERN boolean		clear;		/* TRUE, clear screen */
+ EXTERN char		*clrscr;	/* string to clear screen with */
+-EXTERN char		*login;		/* login program */
++EXTERN char		*loginprog;	/* login program */
+ EXTERN char		*init;		/* init string */
+ EXTERN char		*waitfor;	/* waitfor string */
+ EXTERN char		*Connect;	/* connect string */
+ EXTERN boolean		waitchar;	/* TRUE, wait for a character */
+ EXTERN unsigned int	delay;		/* seconds to delay before the prompt */
+ EXTERN GTAB		*gtab;		/* terminal mode */
+-EXTERN char		devname[MAXLINE + 1];	
++EXTERN char		devname[PATH_MAX + 1];	
+ 					/* name of tty device */
+-EXTERN char		initdevname[MAXLINE + 1];	
++EXTERN char		initdevname[PATH_MAX + 1];	
+ 					/* name of init device */
+ 
+ #ifdef ISSUE
+diff -Nur getty_ps-2.0.7j/mytermio.h getty_ps-2.0.7j.pld/mytermio.h
+--- getty_ps-2.0.7j/mytermio.h	Mon Oct  9 20:49:06 1995
++++ getty_ps-2.0.7j.pld/mytermio.h	Thu Jun 10 16:32:54 1999
+@@ -5,15 +5,5 @@
+ 
+ #ifdef __linux__
+ #define CNUL    0
+-#define CERASE  127	/* ^? */
+-#define CKILL   025	/* ^U */
+-#define CINTR   03	/* ^C */
+-#define CQUIT   034     /* ^\ */
+-#define CSTART  021     /* ^Q */
+-#define CSTOP   023     /* ^S */
+-#define CEOF    04      /* ^D */
+-#define CMIN    06      /* satisfy read at 6 chars */
+-#define CTIME   01      /* .1 sec inter-character timer */
+-
+ #define SSPEED	B9600	/* default speed */
+ #endif
+diff -Nur getty_ps-2.0.7j/table.c getty_ps-2.0.7j.pld/table.c
+--- getty_ps-2.0.7j/table.c	Sun Feb  2 16:04:39 1997
++++ getty_ps-2.0.7j.pld/table.c	Thu Jun 10 16:30:28 1999
+@@ -21,6 +21,7 @@
+ 
+ #include "getty.h"
+ #include "table.h"
++#include "mytermio.h"
+ #include <errno.h>
+ 
+ 
+diff -Nur getty_ps-2.0.7j/tune.h getty_ps-2.0.7j.pld/tune.h
+--- getty_ps-2.0.7j/tune.h	Sun Feb  2 03:17:01 1997
++++ getty_ps-2.0.7j.pld/tune.h	Thu Jun 10 16:30:28 1999
+@@ -54,10 +54,11 @@
+ /*  Where to find things
+  */
+ 
+-#define	CONSOLE	 "/usr/adm/getty.log"	/* error log if not using syslog */
+ #ifndef FSSTND
++#define	CONSOLE	 "/var/log/getty"	/* error log if not using syslog */
+ #define	DEFAULTS "/etc/default/%s"	/* name of defaults file */
+ #else
++#define	CONSOLE	 "/var/log/getty.log"	/* error log if not using syslog */
+ #define	DEFAULTS "/etc/conf.%s"		/* FSSTND compliant defaults file */
+ #endif
+ #define	ISSUE	 "/etc/issue"		/* name of the issue file;
+@@ -78,7 +79,7 @@
+  */
+ 
+ #define	MAXDEF	 100			/* max # lines in defaults file */
+-#define	MAXLINE	 8192			/* max # chars in a line */
++#define	MAXLINE	 1024			/* max # chars in a line */
+ #define	MAXID	 12			/* max # chars in Gtab Id */
+ #define	MAXLOGIN 80			/* max # chars in Gtab Login */
+ 
+diff -Nur getty_ps-2.0.7j/utmp2.c getty_ps-2.0.7j.pld/utmp2.c
+--- getty_ps-2.0.7j/utmp2.c	Mon Sep 11 17:55:17 1995
++++ getty_ps-2.0.7j.pld/utmp2.c	Thu Jun 10 16:30:28 1999
+@@ -16,6 +16,7 @@
+ static off_t utaddress;			/* The file address of the last entry
+ 					   returned by getutent. */
+ 
++#if 0
+ /* kludge for the benefit of getutent() whose semantics differs from the
+    other get..() functions. When set, getutent() will not read the 
+    next entry in utmp, but immediatly returns &Ut, and resets the
+@@ -105,6 +106,7 @@
+ 
+ 	return (struct utmp *)0;
+ }
++#endif
+ 
+ /*  Back up and overwrite the last entry returned by getutent,
+  *  Or append to the file if getutent returned 0.
+@@ -119,6 +121,7 @@
+ 	return ut;
+ }
+ 
++#if 0
+ struct utmp *getutline(struct utmp *ut)
+ {
+ 	if(Fd == -1)
+@@ -174,3 +177,4 @@
+ 	if(Fd != -1) close(Fd);
+ 	Fd = -1;
+ }
++#endif
+diff -Nur getty_ps-2.0.7j/uufuncs.c getty_ps-2.0.7j.pld/uufuncs.c
+--- getty_ps-2.0.7j/uufuncs.c	Fri Apr 26 17:09:48 1996
++++ getty_ps-2.0.7j.pld/uufuncs.c	Thu Jun 10 16:30:28 1999
+@@ -8,6 +8,7 @@
+ #define UUFUNCS
+ #define UUGETTY
+ 
++#include <pwd.h>
+ #include "main.h"
+ #include "uufuncs.h"
+ #include "debug.h"
+@@ -79,6 +80,7 @@
+ #endif	/* ASCIIPID */
+ 	int getpid();
+ 	char *mktemp();
++	struct	passwd *pw;
+ 
+ 	debug(D_LOCK, "makelock(%s) called", name);
+ 
+@@ -102,6 +104,14 @@
+ 	(void) write(fd, (char *)&pid, sizeof(pid));
+ #endif	/* ASCIIPID */
+ 	(void) close(fd);
++
++	/* change owner of link */
++	pw = getpwnam(UUCPID);
++	if (pw==NULL || chown(temp,pw->pw_uid,pw->pw_gid)<0) {
++		debug(D_LOCK, "lock NOT made -- chown failed");
++		(void) unlink(temp);
++		return(FAIL);
++	}
+ 
+ 	/* link it to the lock file
+ 	 */
