@@ -69,14 +69,12 @@ echo ".so getty.1" > $RPM_BUILD_ROOT%{_mandir}/man1/uugetty.1
 
 install Examples/gettydefs.high-speed $RPM_BUILD_ROOT%{_sysconfdir}/gettydefs
 
-gzip -9nf Examples/default/* ANNOUNCE README*
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc Examples/default/* ANNOUNCE.gz README*
+%doc Examples/default/* ANNOUNCE README*
 
 %config(missingok) %verify(not mtime size md5) %{_sysconfdir}/gettydefs
 
