@@ -12,7 +12,7 @@ Copyright:	Distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
 URL:		ftp://tsx-11.mit.edu/pub/linux/sources/sbin
 Source:		%{name}-%{version}.tar.gz
 Patch0:		getty_ps-misc.patch
-BuildRoot:	/tmp/%{name}-%{version}-root
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 getty and uugetty are used to accept logins on the console or
