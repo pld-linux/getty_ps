@@ -10,13 +10,13 @@ Group:		Utilities/System
 Group(pl):	Narzêdzia/System
 Copyright:	Distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
 URL:		ftp://tsx-11.mit.edu/pub/linux/sources/sbin
-Source:		%{name}-%{version}.tar.gz
+Source0:	%{name}-%{version}.tar.gz
 Patch0:		getty_ps-misc.patch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-getty and uugetty are used to accept logins on the console or
-a terminal.  They can handle answer a modem for dialup connections
+getty and uugetty are used to accept logins on the console or a
+terminal. They can handle answer a modem for dialup connections
 (although mgetty is recommended for that purpose).
 
 %description -l de
@@ -31,14 +31,15 @@ modem pour une connexion par téléphone (bien que mgetty soit
 recommandé pour cet usage.
 
 %description -l pl
-Programy getty i uugetty s± u¿ywane do kontroli logowania na terminalu lub
-konsoli. Mog± odpowiedzieæ na ¿±danie modemu podczas po³±czenia dialup.
-(W tym wypadku jednak mgetty jest polecane w miejsce getty_ps)
+Programy getty i uugetty s± u¿ywane do kontroli logowania na terminalu
+lub konsoli. Mog± odpowiedzieæ na ¿±danie modemu podczas po³±czenia
+dialup. (W tym wypadku jednak mgetty jest polecane w miejsce getty_ps)
 
 %description -l tr
-getty ve uugetty konsol veya terminalerde sisteme giriþ sürecini baþlatmakta
-kullanýlýr. Ayný zamanda çevirmeli að tipi baðlantýlar için modeme yanýt
-verme özelliklerine de sahiptirler (ama bunun için mgetty daha kullanýþlýdýr).
+getty ve uugetty konsol veya terminalerde sisteme giriþ sürecini
+baþlatmakta kullanýlýr. Ayný zamanda çevirmeli að tipi baðlantýlar
+için modeme yanýt verme özelliklerine de sahiptirler (ama bunun için
+mgetty daha kullanýþlýdýr).
 
 %prep
 %setup -q
@@ -58,7 +59,7 @@ TOPDIR=$RPM_BUILD_ROOT make install
 
 echo ".so getty.1" > $RPM_BUILD_ROOT%{_mandir}/man1/uugetty.1
 
-install Examples/gettydefs.high-speed $RPM_BUILD_ROOT/etc/gettydefs
+install Examples/gettydefs.high-speed $RPM_BUILD_ROOT%{_sysconfdir}/gettydefs
 
 gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man{1,5}/* Examples/default/* \
 	    ANNOUNCE README*
@@ -70,7 +71,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc Examples/default/* ANNOUNCE.gz README*
 
-%config(missingok) %verify(not mtime size md5) /etc/gettydefs
+%config(missingok) %verify(not mtime size md5) %{_sysconfdir}/gettydefs
 
 %attr(755,root,root) /sbin/*
 %{_mandir}/man[15]/*
