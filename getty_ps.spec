@@ -5,7 +5,7 @@ Summary(pl):	getty i uugetty
 Summary(tr):	getty ve uugetty
 Name:		getty_ps
 Version:	2.0.7j
-Release:	15
+Release:	16
 License:	distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
 Group:		Applications/System
 Source0:	ftp://tsx-11.mit.edu/pub/linux/sources/sbin/%{name}-%{version}.tar.gz
