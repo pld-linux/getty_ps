@@ -6,12 +6,13 @@ Summary(tr):	getty ve uugetty
 Name:		getty_ps
 Version:	2.0.7j
 Release:	10
-Group:		Utilities/System
-Group(pl):	Narzêdzia/System
+Group:		Applications/System
+Group(de):	Applikationen/System
+Group(pl):	Aplikacje/System
 Copyright:	Distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
 URL:		ftp://tsx-11.mit.edu/pub/linux/sources/sbin
 Source0:	%{name}-%{version}.tar.gz
-Patch0:		getty_ps-misc.patch
+Patch0:		%{name}-misc.patch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -49,7 +50,7 @@ mgetty daha kullanýþlýdýr).
 # clean this ...
 %{__make} clean
 
-%{__make} OPT="$RPM_OPT_FLAGS" LIBS="-lncurses"
+%{__make} OPT="%{rpmcflags}" LIBS="-lncurses"
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -61,8 +62,7 @@ echo ".so getty.1" > $RPM_BUILD_ROOT%{_mandir}/man1/uugetty.1
 
 install Examples/gettydefs.high-speed $RPM_BUILD_ROOT%{_sysconfdir}/gettydefs
 
-gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man{1,5}/* Examples/default/* \
-	    ANNOUNCE README*
+gzip -9nf Examples/default/* ANNOUNCE README*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
