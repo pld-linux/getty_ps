@@ -5,14 +5,19 @@ Summary(pl):	getty i uugetty
 Summary(tr):	getty ve uugetty
 Name:		getty_ps
 Version:	2.0.7j
-Release:	10
+Release:	15
+License:	Distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
 Group:		Applications/System
 Group(de):	Applikationen/System
 Group(pl):	Aplikacje/System
-Copyright:	Distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
-URL:		ftp://tsx-11.mit.edu/pub/linux/sources/sbin
-Source0:	%{name}-%{version}.tar.gz
+Source0:	ftp://tsx-11.mit.edu/pub/linux/sources/sbin/%{name}-%{version}.tar.gz
 Patch0:		%{name}-misc.patch
+Patch1:		%{name}-y2k.patch
+Patch2:		%{name}-rb.patch
+Patch3:		%{name}-hangup.patch
+Patch4:		%{name}-mktemp.patch
+URL:		ftp://tsx-11.mit.edu/pub/linux/sources/sbin
+BuildRequires:	ncurses-devel >= 5.2
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -44,7 +49,11 @@ mgetty daha kullanýþlýdýr).
 
 %prep
 %setup -q
-%patch -p1 
+%patch0 -p1 
+%patch1 -p1 
+%patch2 -p1 
+%patch3 -p1 
+%patch4 -p1 
 
 %build
 # clean this ...
