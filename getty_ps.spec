@@ -15,7 +15,7 @@ Patch2:      getty_ps-pipe.patch
 Patch3:      getty_ps-glibc.patch
 Patch4:      getty_ps-signal.patch
 Patch5:      getty_ps-ncurses.patch
-Buildroot:   /tmp/%{name}-%{version}-%{release}-root
+BuildRoot:	/tmp/%{name}-%{version}-root
 
 %description
 getty and uugetty are used to accept logins on the console or
