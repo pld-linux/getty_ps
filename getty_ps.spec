@@ -62,11 +62,11 @@ install -d $RPM_BUILD_ROOT/{sbin,usr/man/{man1,man5},etc,var/log}
 
 TOPDIR=$RPM_BUILD_ROOT make install
 
-echo ".so getty.1" > $RPM_BUILD_ROOT/usr/man/man1/uugetty.1
+echo ".so getty.1" > $RPM_BUILD_ROOT%{_mandir}/man1/uugetty.1
 install Examples/gettydefs.high-speed $RPM_BUILD_ROOT/etc/gettydefs
 touch $RPM_BUILD_ROOT/var/log/getty.log
 
-gzip -9nf $RPM_BUILD_ROOT/usr/man/man{1,5}/*
+gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man{1,5}/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -76,7 +76,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc Examples ANNOUNCE README.linux README.2.0.7j README.hi-speed
 %config(missingok) %verify(not mtime size md5) /etc/gettydefs
 %attr(755, root, root) /sbin/*
-%attr(644, root,  man) /usr/man/man[15]/*
+%attr(644, root,  man) %{_mandir}/man[15]/*
 %attr(600, root,  man) %ghost /var/log/getty.log
 
 %changelog
