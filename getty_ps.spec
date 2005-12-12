@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc Examples/default/* ANNOUNCE README*
 
-%config(missingok) %verify(not mtime size md5) %{_sysconfdir}/gettydefs
+%config(missingok) %verify(not md5 mtime size) %{_sysconfdir}/gettydefs
 
 %attr(755,root,root) /sbin/*
 %{_mandir}/man[15]/*
