@@ -58,7 +58,10 @@ mgetty daha kullanýþlýdýr).
 # clean this ...
 %{__make} clean
 
-%{__make} OPT="%{rpmcflags}" LIBS="-lncurses"
+%{__make} \
+	CC="%{__cc}" \
+	OPT="%{rpmcflags}" \
+	LIBS="-lncurses"
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -75,9 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc Examples/default/* ANNOUNCE README*
-
+%doc ChangeLog Examples/default/* ANNOUNCE README*
 %config(missingok) %verify(not md5 mtime size) %{_sysconfdir}/gettydefs
-
 %attr(755,root,root) /sbin/*
 %{_mandir}/man[15]/*
