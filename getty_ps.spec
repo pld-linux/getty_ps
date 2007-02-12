@@ -1,8 +1,8 @@
 Summary:	getty and uugetty
-Summary(de):	getty und uugetty
-Summary(fr):	getty et uugetty
-Summary(pl):	getty i uugetty
-Summary(tr):	getty ve uugetty
+Summary(de.UTF-8):   getty und uugetty
+Summary(fr.UTF-8):   getty et uugetty
+Summary(pl.UTF-8):   getty i uugetty
+Summary(tr.UTF-8):   getty ve uugetty
 Name:		getty_ps
 Version:	2.0.7j
 Release:	16
@@ -24,27 +24,27 @@ getty and uugetty are used to accept logins on the console or a
 terminal. They can handle answer a modem for dialup connections
 (although mgetty is recommended for that purpose).
 
-%description -l de
+%description -l de.UTF-8
 getty und uugetty werden zum Akzeptieren von Logins auf der Konsole
-oder einem Terminal verwendet und können ein Modem für Anwähl-
-Verbindungen verwenden (wir empfehlen dafür allerdings mgetty).
+oder einem Terminal verwendet und kÃ¶nnen ein Modem fÃ¼r AnwÃ¤hl-
+Verbindungen verwenden (wir empfehlen dafÃ¼r allerdings mgetty).
 
-%description -l fr
-Getty et uugetty sont utilisés pour accepter les connexions sur la
+%description -l fr.UTF-8
+Getty et uugetty sont utilisÃ©s pour accepter les connexions sur la
 console ou sur un terminal. Ils peuvent aussi prendre en charge un
-modem pour une connexion par téléphone (bien que mgetty soit
-recommandé pour cet usage.
+modem pour une connexion par tÃ©lÃ©phone (bien que mgetty soit
+recommandÃ© pour cet usage.
 
-%description -l pl
-Programy getty i uugetty s± u¿ywane do kontroli logowania na terminalu
-lub konsoli. Mog± odpowiedzieæ na ¿±danie modemu podczas po³±czenia
+%description -l pl.UTF-8
+Programy getty i uugetty sÄ… uÅ¼ywane do kontroli logowania na terminalu
+lub konsoli. MogÄ… odpowiedzieÄ‡ na Å¼Ä…danie modemu podczas poÅ‚Ä…czenia
 dialup. (W tym wypadku jednak mgetty jest polecane w miejsce getty_ps)
 
-%description -l tr
-getty ve uugetty konsol veya terminalerde sisteme giriş sürecini
-başlatmakta kullanılır. Aynı zamanda çevirmeli ağ tipi bağlantılar
-için modeme yanıt verme özelliklerine de sahiptirler (ama bunun için
-mgetty daha kullanışlıdır).
+%description -l tr.UTF-8
+getty ve uugetty konsol veya terminalerde sisteme giriÅŸ sÃ¼recini
+baÅŸlatmakta kullanÄ±lÄ±r. AynÄ± zamanda Ã§evirmeli aÄŸ tipi baÄŸlantÄ±lar
+iÃ§in modeme yanÄ±t verme Ã¶zelliklerine de sahiptirler (ama bunun iÃ§in
+mgetty daha kullanÄ±ÅŸlÄ±dÄ±r).
 
 %prep
 %setup -q
