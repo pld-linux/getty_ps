@@ -1,8 +1,8 @@
 Summary:	getty and uugetty
-Summary(de.UTF-8):   getty und uugetty
-Summary(fr.UTF-8):   getty et uugetty
-Summary(pl.UTF-8):   getty i uugetty
-Summary(tr.UTF-8):   getty ve uugetty
+Summary(de.UTF-8):	getty und uugetty
+Summary(fr.UTF-8):	getty et uugetty
+Summary(pl.UTF-8):	getty i uugetty
+Summary(tr.UTF-8):	getty ve uugetty
 Name:		getty_ps
 Version:	2.0.7j
 Release:	16
