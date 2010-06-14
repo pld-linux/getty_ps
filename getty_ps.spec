@@ -8,14 +8,14 @@ Version:	2.0.7j
 Release:	16
 License:	distributable - Copyright 1989,1990 by Paul Sutcliffe Jr.
 Group:		Applications/System
-Source0:	ftp://tsx-11.mit.edu/pub/linux/sources/sbin/%{name}-%{version}.tar.gz
+Source0:	ftp://ftp.nwmagic.net/pub/sources/%{name}-%{version}.tar.gz
 # Source0-md5:	56bd3fd2f9a23ffdf96503f664f5c914
 Patch0:		%{name}-misc.patch
 Patch1:		%{name}-y2k.patch
 Patch2:		%{name}-rb.patch
 Patch3:		%{name}-hangup.patch
 Patch4:		%{name}-mktemp.patch
-URL:		ftp://tsx-11.mit.edu/pub/linux/sources/sbin/%{name}-%{version}.lsm
+URL:		ftp://ftp.nwmagic.net/pub/sources/%{name}-%{version}.lsm
 BuildRequires:	ncurses-devel >= 5.2
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
