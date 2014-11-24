@@ -15,7 +15,7 @@ Patch1:		%{name}-y2k.patch
 Patch2:		%{name}-rb.patch
 Patch3:		%{name}-hangup.patch
 Patch4:		%{name}-mktemp.patch
-URL:		ftp://ftp.nwmagic.net/pub/sources/%{name}-%{version}.lsm
+URL:		ftp://ftp.nwmagic.net/pub/sources/
 BuildRequires:	ncurses-devel >= 5.2
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -71,7 +71,7 @@ TOPDIR=$RPM_BUILD_ROOT make install
 
 echo ".so getty.1" > $RPM_BUILD_ROOT%{_mandir}/man1/uugetty.1
 
-install Examples/gettydefs.high-speed $RPM_BUILD_ROOT%{_sysconfdir}/gettydefs
+cp -p Examples/gettydefs.high-speed $RPM_BUILD_ROOT%{_sysconfdir}/gettydefs
 
 %clean
 rm -rf $RPM_BUILD_ROOT
